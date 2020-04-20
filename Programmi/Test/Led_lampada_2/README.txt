@@ -1,0 +1,1 @@
+Test di led RGB e sensore touch triplo. Vecchio progetto.
