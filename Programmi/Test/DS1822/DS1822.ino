@@ -32,6 +32,7 @@ void loop(void) {
  Serial.println("CRC is not valid!");
  return;
  }
+ 
  Serial.println();
  
 // // the first ROM byte indicates which chip
