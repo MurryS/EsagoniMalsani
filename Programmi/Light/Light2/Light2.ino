@@ -14,17 +14,18 @@
 //========================================================
 
 
-#include <TinyWire.h>  //iic for attiny
 
 #define adr 0x04
-#define LED 1
+#define LED 5 //!!!!!!!!!!!!!!!!!!!!da mettere sul 2
 #define Mic 3
 
+#define ramptime 10 //ms
+
 byte data[8]; //dati che leggerò (data[0] = config; data[1] = led pwm value)
-byte tgt; // valore a cui LED PWM deve convergere
-byte actual;  //valore PWM LED
+byte tgt = 255; // valore a cui LED PWM deve convergere
+byte actual = 0;  //valore PWM LED
 boolean state = HIGH; //set to on, False = led off
-long lastramp = 0;
+long last = 0;
 long lastchange = 0;
 
 
@@ -34,13 +35,8 @@ long lastchange = 0;
 void setup() {
   pinMode(LED, OUTPUT);
   pinMode(Mic, INPUT_PULLUP);
-  // config TinyWire library for I2C slave functionality
-  TinyWire.begin(adr);
-  // register a handler function in case of a request from a master
-  TinyWire.onRequest(sendToMaster);
-  TinyWire.onReceive(getData);
   delay(200);
-  lastramp = millis();
+  last = millis();
   lastchange = millis();
 }
 
@@ -57,29 +53,11 @@ void loop(void) {
     }else{tgt = 0;} 
   }
   //aggiornamento PWM
-  if (millis()-lastramp > 5){//change pwm
-    if(actual < tgt){actual++;}
-    if(actual > tgt){actual--;}
+  if (millis()-last > ramptime){//change pwm
+    if(actual < tgt){actual = actual + 1;}
+    if(actual > tgt){actual = actual - 1;}
     analogWrite(LED, actual);
-    lastramp = millis();
+    last = millis();
   }
   
-}
-
-//========================================================
-// IIC methods
-//========================================================
-void sendToMaster(){
-  TinyWire.send(data[0]); //invio le mie impostazioni
-  TinyWire.send(tgt);     //invio il target per PWM LED
-}
-
-void getData(){
-  while(TinyWire.available()>0){
-    int i = 0;
-    data[i] = TinyWire.read();
-    i++;
-  }
-  //cambio luce
-  tgt = data[1];
 }
